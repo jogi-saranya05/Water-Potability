@@ -1,6 +1,6 @@
-streamlit
-scikit-learn==1.6.1
-pandas==2.2.2
+streamlit==1.39.0
+pandas==2.2.3
 numpy==2.0.2
-shap
-google-generativeai
+scikit-learn==1.6.1
+shap==0.46.0
+google-generativeai==0.8.3
