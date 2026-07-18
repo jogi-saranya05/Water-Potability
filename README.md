@@ -118,11 +118,7 @@ The model was trained on the **Water Potability Dataset**, which contains water 
 
 ## 👩‍💻 Author
 
-**Saranya Jogi, Risha Rastogi and Yosha Singh**
-
-GitHub: https://github.com/jogi-saranya05
-
-LinkedIn: www.linkedin.com/in/saranya-jogi-140531340
+** Risha Rastogi, Saranya Jogi and Yosha Singh**
 
 ---
 
