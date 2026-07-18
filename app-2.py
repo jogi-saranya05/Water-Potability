@@ -71,8 +71,8 @@ if st.button("Predict Potability"):
     prediction = final_model.predict(input_scaled_df)[0]
     verdict = "✅ Potable (Safe)" if prediction == 1 else "❌ Not Potable (Unsafe)"
 
-    if prediction == 1:
-    st.success("✅ Water is Safe for Drinking")
+if prediction == 1:
+        st.success("✅ Water is Safe for Drinking")
 else:
     st.error("❌ Water is Unsafe for Drinking")
 
