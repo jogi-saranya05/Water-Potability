@@ -60,86 +60,88 @@ with col2:
     turbidity = st.number_input("Turbidity", 0.0, 10.0, 4.0)
 
 if st.button("Predict Potability"):
-    input_data = pd.DataFrame([[ph, hardness, solids, chloramines, sulfate,
-                                 conductivity, organic_carbon, trihalomethanes, turbidity]],
-                               columns=['ph','Hardness','Solids','Chloramines','Sulfate',
-                                        'Conductivity','Organic_carbon','Trihalomethanes','Turbidity'])
-
-    input_scaled = scaler.transform(input_data)
-    input_scaled_df = pd.DataFrame(input_scaled, columns=input_data.columns)
-
-    prediction = final_model.predict(input_scaled_df)[0]
-    verdict = "✅ Potable (Safe)" if prediction == 1 else "❌ Not Potable (Unsafe)"
-
-if prediction == 1:
-        st.success("✅ Water is Safe for Drinking")
-else:
-    st.error("❌ Water is Unsafe for Drinking")
-
-    prob = final_model.predict_proba(input_scaled_df)[0]
-
-confidence = max(prob) * 100
-
-st.metric(
-    label="Prediction Confidence",
-    value=f"{confidence:.2f}%"
-)
-
-if st.button("Predict Potability"):
 
     with st.spinner("Analyzing Water Sample..."):
+
+        input_data = pd.DataFrame(
+            [[ph, hardness, solids, chloramines, sulfate,
+              conductivity, organic_carbon, trihalomethanes, turbidity]],
+            columns=[
+                'ph','Hardness','Solids','Chloramines','Sulfate',
+                'Conductivity','Organic_carbon','Trihalomethanes','Turbidity'
+            ]
+        )
+
+        input_scaled = scaler.transform(input_data)
+        input_scaled_df = pd.DataFrame(input_scaled, columns=input_data.columns)
+
         prediction = final_model.predict(input_scaled_df)[0]
+        prob = final_model.predict_proba(input_scaled_df)[0]
+        confidence = max(prob) * 100
 
-    tab1, tab2, tab3 = st.tabs([
-    "Prediction",
-    "AI Report",
-    "Explainability"
-])
-with tab1:
-    # prediction
+        verdict = "✅ Potable (Safe)" if prediction == 1 else "❌ Not Potable (Unsafe)"
 
-with tab2:
-    # Gemini report
+        # SHAP
+        explainer = shap.TreeExplainer(final_model)
+        shap_values = explainer.shap_values(input_scaled_df)
 
-with tab3:
-    # SHAP
+        feature_impacts = list(zip(
+            input_data.columns,
+            input_data.iloc[0].values,
+            shap_values[0]
+        ))
 
-    st.download_button(
-    label="📄 Download Report",
-    data=report,
-    file_name="water_report.txt",
-    mime="text/plain"
-)
+        feature_impacts.sort(key=lambda x: abs(x[2]), reverse=True)
+        top_factors = feature_impacts[:4]
 
-    # SHAP explanation
-    explainer = shap.TreeExplainer(final_model)
-    shap_values = explainer.shap_values(input_scaled_df)
+        factors_text = "\n".join([
+            f"- {name}: value={value:.2f}, impact={'increases' if impact>0 else 'decreases'} potability"
+            for name, value, impact in top_factors
+        ])
 
-    feature_impacts = list(zip(input_data.columns, input_data.iloc[0].values, shap_values[0]))
-    feature_impacts.sort(key=lambda x: abs(x[2]), reverse=True)
-    top_factors = feature_impacts[:4]
-
-    factors_text = "\n".join([
-        f"- {name}: value = {value:.2f}, impact = {'increases' if impact > 0 else 'decreases'} potability likelihood"
-        for name, value, impact in top_factors
-    ])
-
-    st.write("**Top contributing factors:**")
-    for name, value, impact in top_factors:
-        direction = "⬆️ increases" if impact > 0 else "⬇️ decreases"
-        st.write(f"- {name}: {value:.2f} ({direction} potability likelihood)")
-
-    # GenAI report
-    prompt = f"""
-You are a water quality assistant. Based on the following machine learning model output, write a short, plain-English report (3-4 sentences) for a non-technical reader, such as a water treatment operator.
-
+        prompt = f"""
 Prediction: {verdict}
 
 Top contributing factors:
 {factors_text}
 
-Explain in simple terms why the water was classified this way, and give one practical recommendation if it was classified as unsafe. Keep it concise and avoid technical jargon.
+Write a simple 3-4 sentence explanation for a normal user.
 """
-    response = model_genai.generate_content(prompt)
-    st.write("**Plain-English Report:**")
-    st.write(response.text)
+
+        response = model_genai.generate_content(prompt)
+        report = response.text
+
+    tab1, tab2, tab3 = st.tabs(
+        ["Prediction", "AI Report", "Explainability"]
+    )
+
+    with tab1:
+
+        if prediction == 1:
+            st.success(verdict)
+        else:
+            st.error(verdict)
+
+        st.metric("Confidence", f"{confidence:.2f}%")
+
+    with tab2:
+
+        st.write(report)
+
+        st.download_button(
+            "📄 Download Report",
+            report,
+            file_name="water_report.txt"
+        )
+
+    with tab3:
+
+        st.write("### Top Contributing Factors")
+
+        for name, value, impact in top_factors:
+
+            direction = "⬆️ increases" if impact > 0 else "⬇️ decreases"
+
+            st.write(
+                f"**{name}** : {value:.2f} ({direction} potability)"
+            )
