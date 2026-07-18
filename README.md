@@ -103,6 +103,9 @@ The model was trained on the **Water Potability Dataset**, which contains water 
 
  <img width="1440" height="804" alt="image" src="https://github.com/user-attachments/assets/2e9f37b4-ac78-4fa4-b57d-fccd746f45ae" />
 
+ ### Explanability
+ 
+ <img width="1437" height="811" alt="image" src="https://github.com/user-attachments/assets/2d3756e4-73a9-4939-9a6f-7fb8ae9cf28b" />
 
 ---
 
