@@ -95,7 +95,7 @@ if st.button("Predict Potability"):
     "AI Report",
     "Explainability"
 ])
-    with tab1:
+with tab1:
     # prediction
 
 with tab2:
