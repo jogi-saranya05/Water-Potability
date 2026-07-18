@@ -1,4 +1,4 @@
-<img width="1440" height="804" alt="image" src="https://github.com/user-attachments/assets/9d7eabfd-771a-4982-9415-5869aa932277" /> # 💧 Water Potability Predictor
+ # 💧 Water Potability Predictor
 
 An AI-powered web application that predicts whether water is safe for drinking based on key water quality parameters. The application combines a Machine Learning model with Explainable AI (SHAP) and Google's Gemini AI to provide both predictions and easy-to-understand explanations.
 
