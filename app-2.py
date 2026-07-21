@@ -180,7 +180,7 @@ Write a simple 3-4 sentence explanation for a normal user.
         st.download_button(
             "📄 Download Report",
             report,
-            file_name="water_report.pdf"
+            file_name="water_report.txt"
         )
 
     with tab3:
