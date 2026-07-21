@@ -35,10 +35,7 @@ Features:
 - Gemini AI Report
 """)
 
-# ---------------------------------------------------------
-# Cache model, scaler, and SHAP explainer so they load once
-# per session instead of on every button click / rerun
-# ---------------------------------------------------------
+# Load saved model and scaler (cached so this only runs once, not on every click)
 @st.cache_resource
 def load_model_and_scaler():
     with open('final_model.pkl', 'rb') as f:
@@ -47,19 +44,11 @@ def load_model_and_scaler():
         scaler = pickle.load(f)
     return model, scaler
 
-@st.cache_resource
-def load_explainer(_model):
-    return shap.TreeExplainer(_model)
-
 final_model, scaler = load_model_and_scaler()
-explainer = load_explainer(final_model)
 
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 model_genai = genai.GenerativeModel('gemini-flash-latest')
 
-# ---------------------------------------------------------
-# Preset sample buttons
-# ---------------------------------------------------------
 st.write("**Quick test samples:**")
 preset_col1, preset_col2, preset_col3 = st.columns(3)
 
@@ -76,6 +65,7 @@ with preset_col3:
     if st.button("🔄 Reset"):
         st.session_state.preset = None
 
+# Define preset values
 presets = {
     "safe":   {"ph": 7.2, "hardness": 150, "solids": 15000, "chloramines": 5.0,
                "sulfate": 250, "conductivity": 400, "organic_carbon": 10,
@@ -85,11 +75,10 @@ presets = {
                "trihalomethanes": 100, "turbidity": 8.5}
 }
 
+# Use preset values as defaults if one is selected, else fall back to normal defaults
 default = presets.get(st.session_state.preset, {})
 
-# ---------------------------------------------------------
-# Input fields — now actually wired to presets via `default`
-# ---------------------------------------------------------
+# Input fields — now actually wired to `default` so presets work
 col1, col2 = st.columns(2)
 
 with col1:
@@ -122,8 +111,8 @@ if st.button("Predict Potability"):
             [[ph, hardness, solids, chloramines, sulfate,
               conductivity, organic_carbon, trihalomethanes, turbidity]],
             columns=[
-                'ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate',
-                'Conductivity', 'Organic_carbon', 'Trihalomethanes', 'Turbidity'
+                'ph','Hardness','Solids','Chloramines','Sulfate',
+                'Conductivity','Organic_carbon','Trihalomethanes','Turbidity'
             ]
         )
 
@@ -136,7 +125,8 @@ if st.button("Predict Potability"):
 
         verdict = "✅ Potable (Safe)" if prediction == 1 else "❌ Not Potable (Unsafe)"
 
-        # SHAP (explainer now loaded once via cache, not rebuilt here)
+        # SHAP
+        explainer = shap.TreeExplainer(final_model)
         shap_values = explainer.shap_values(input_scaled_df)
 
         feature_impacts = list(zip(
@@ -149,7 +139,7 @@ if st.button("Predict Potability"):
         top_factors = feature_impacts[:4]
 
         factors_text = "\n".join([
-            f"- {name}: value={value:.2f}, impact={'increases' if impact > 0 else 'decreases'} potability"
+            f"- {name}: value={value:.2f}, impact={'increases' if impact>0 else 'decreases'} potability"
             for name, value, impact in top_factors
         ])
 
@@ -162,13 +152,13 @@ Top contributing factors:
 Write a simple 3-4 sentence explanation for a normal user.
 """
 
-        # Gemini call wrapped so a rate-limit / API error doesn't crash the app
+        # Gemini call wrapped so a rate-limit/network error doesn't crash the app
         try:
             response = model_genai.generate_content(prompt)
             report = response.text
-        except Exception as e:
-            st.warning("⚠️ AI report generation is unavailable right now (API limit or connection issue). Showing key factors instead.")
-            report = "Key factors affecting this prediction:\n\n" + factors_text
+        except Exception:
+            st.warning("⚠️ AI report generation is unavailable right now. Showing raw factors instead.")
+            report = "Key factors affecting this prediction:\n" + factors_text
 
     tab1, tab2, tab3 = st.tabs(
         ["Prediction", "AI Report", "Explainability"]
