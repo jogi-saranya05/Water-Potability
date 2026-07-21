@@ -67,12 +67,12 @@ with preset_col3:
 
 # Define preset values
 presets = {
-    "safe":   {"ph": 7.2, "hardness": 150, "solids": 15000, "chloramines": 5.0,
-               "sulfate": 250, "conductivity": 400, "organic_carbon": 10,
-               "trihalomethanes": 50, "turbidity": 3.0},
-    "unsafe": {"ph": 3.5, "hardness": 350, "solids": 45000, "chloramines": 12,
-               "sulfate": 450, "conductivity": 700, "organic_carbon": 25,
-               "trihalomethanes": 100, "turbidity": 8.5}
+    "safe":   {"ph": 7.2, "hardness": 150.0, "solids": 15000.0, "chloramines": 5.0,
+               "sulfate": 250.0, "conductivity": 400.0, "organic_carbon": 10.0,
+               "trihalomethanes": 50.0, "turbidity": 3.0},
+    "unsafe": {"ph": 3.5, "hardness": 350.0, "solids": 45000.0, "chloramines": 12.0,
+               "sulfate": 450.0, "conductivity": 700.0, "organic_carbon": 25.0,
+               "trihalomethanes": 100.0, "turbidity": 8.5}
 }
 
 # Use preset values as defaults if one is selected, else fall back to normal defaults
